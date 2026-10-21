@@ -9,7 +9,6 @@
 // @match        https://bondage-europe.com/*
 // @match        https://www.bondage-europe.com/*
 // @match        https://www.bondage-asia.com/*
-// @include      /^http:\/\/localhost(:\d+)?\/.*$/
 // @require      https://cdn.jsdelivr.net/npm/bondage-club-mod-sdk@1.2.0/dist/bcmodsdk.js
 // @run-at       document-end
 // @grant        none
