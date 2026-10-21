@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.6-electron
+// @version      0.3.66-electron
 // @description  Echo eye packs for Electron Bondage Club (no Tampermonkey @require)
 // @author       local
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -10,6 +10,8 @@
 // @match        https://*.bondage-asia.com/club/R*
 // @run-at       document-end
 // @grant        none
+// @downloadURL  https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
+// @updateURL    https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 // ==/UserScript==
 //
 // Install: copy this file into
