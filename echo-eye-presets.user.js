@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.6
+// @version      0.3.66
 // @description  Save/load ECHO eye packs with Extensions menu, blink and chat buttons
 // @author       local
 // @match        https://bondageprojects.elementfx.com/*
@@ -12,6 +12,8 @@
 // @require      https://cdn.jsdelivr.net/npm/bondage-club-mod-sdk@1.2.0/dist/bcmodsdk.js
 // @run-at       document-end
 // @grant        none
+// @downloadURL  https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
+// @updateURL    https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 // ==/UserScript==
 
 /* global Player, ServerIsConnected, ServerSocket, ServerPlayerExtensionSettingsSync,
