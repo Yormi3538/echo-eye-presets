@@ -8,7 +8,6 @@
 // @match        https://*.bondage-europe.com/R*/*
 // @match        https://*.bondageprojects.com/R*/*
 // @match        https://*.bondage-asia.com/club/R*
-// @include      /^http:\/\/localhost(:\d+)?\/.*$/
 // @run-at       document-end
 // @grant        none
 // ==/UserScript==
