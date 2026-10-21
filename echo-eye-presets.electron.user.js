@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.66-electron
+// @version      0.3.6-electron
 // @description  Echo eye packs for Electron Bondage Club (no Tampermonkey @require)
 // @author       local
 // @match        https://*.bondageprojects.elementfx.com/R*/*
