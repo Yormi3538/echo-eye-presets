@@ -16,7 +16,7 @@ Installation (Tampermonkey)
 Option A — Install from GitHub (recommended)
 Install Tampermonkey (or Violentmonkey).
 Open the raw script URL (must end with .user.js), for example:
-raw.githubusercontent.com/Yormi3538/echo-eye-presets.user.js
+https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 
 Tampermonkey will open the install page — click Install.
 Refresh Bondage Club (or log in again).
