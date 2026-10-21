@@ -28,9 +28,7 @@ Without ECHO eye groups the mod still loads, but save/load will warn that eye sl
 1. Install Tampermonkey (or Violentmonkey).
 2. Open the **raw** script URL (must end with `.user.js`), for example:
 
-   ```text
-   https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
-   ```
+https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 
 3. Tampermonkey will open the install page — click **Install**.
 4. Refresh Bondage Club (or log in again).
