@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/33792954/README.md)
 # Echo Eye Presets (EEP)
 
 A Bondage Club userscript that saves and loads **ECHO Clothing Ext** eye looks (left / right Luzi eye slots) as named presets, grouped into **packs** (for example “red eyes”, “blue eyes”). Switch looks from a draggable chat dropdown or from the Extensions settings screen, with an optional **blink** animation when changing presets in chat.
