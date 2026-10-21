@@ -8,7 +8,7 @@ Settings path: Preferences → Extensions → Echo Eye Presets
 Requirements
 Bondage Club (browser) — official / Europe / Asia mirrors supported
 Tampermonkey or Violentmonkey
-ECHO Clothing Ext (or equivalent ECHO eye mod) — provides groups 左眼_Luzi / 右眼_Luzi
+ECHO Clothing Ext (or equivalent ECHO eye mod)
 bcModSdk — loaded automatically via @require (CDN)
 Without ECHO eye groups the mod still loads, but save/load will warn that eye slots were not found.
 
@@ -16,7 +16,7 @@ Installation (Tampermonkey)
 Option A — Install from GitHub (recommended)
 Install Tampermonkey (or Violentmonkey).
 Open the raw script URL (must end with .user.js), for example:
-raw.githubusercontent.com/YOUR_USER/YOUR_REP…eye-presets.user.js
+raw.githubusercontent.com/Yormi3538/echo-eye-presets.user.js
 
 Tampermonkey will open the install page — click Install.
 Refresh Bondage Club (or log in again).
@@ -32,7 +32,6 @@ Auto-updates (optional)
 If you host the script on GitHub, add these lines to the userscript header (with your real raw URLs):
 
 // @downloadURL raw.githubusercontent.com/YOUR_USER/YOUR_REP…eye-presets.user.js
-// @updateURL raw.githubusercontent.com/YOUR_USER/YOUR_REP…eye-presets.user.js
 
 Tampermonkey can then check for new versions automatically.
 
