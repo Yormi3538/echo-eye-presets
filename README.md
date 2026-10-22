@@ -41,17 +41,6 @@ https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-prese
 2. Use **Import from file** / paste the contents of `echo-eye-presets.user.js` into a new script.
 3. Save and reload the club.
 
-### Auto-updates (optional)
-
-If you host the script on GitHub, add these lines to the userscript header (with your real raw URLs):
-
-```js
-// @downloadURL  https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
-// @updateURL    https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
-```
-
-Tampermonkey can then check for new versions automatically.
-
 ---
 
 ## Electron / desktop client
