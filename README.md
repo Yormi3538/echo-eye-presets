@@ -2,7 +2,7 @@
 
 A Bondage Club userscript that saves and loads **ECHO Clothing Ext** eye looks (left / right Luzi eye slots) as named presets, grouped into **packs** (for example “red eyes”, “blue eyes”). Switch looks from a draggable chat dropdown or from the Extensions settings screen, with an optional **blink** animation when changing presets in chat.
 
-**Current version:** `0.3.7`  
+**Current version:** `0.3.8`  
 **Chat command:** `/eyes`  
 **Settings path:** Preferences → Extensions → **Echo Eye Presets**
 
