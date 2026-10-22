@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.7
+// @version      0.3.8
 // @description  Save/load ECHO eye packs with Extensions menu, blink and chat buttons
 // @author       local
 // @match        https://bondageprojects.elementfx.com/*
