@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.8
+// @version      0.3.9
 // @description  Save/load ECHO eye packs with Extensions menu, blink and chat buttons
 // @author       local
 // @match        https://bondageprojects.elementfx.com/*
@@ -15,6 +15,7 @@
 // @downloadURL  https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 // @updateURL    https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-presets.user.js
 // ==/UserScript==
+// NOTE: keep // @version and MOD_VERSION identical on every release.
 
 /* global Player, ServerIsConnected, ServerSocket, ServerPlayerExtensionSettingsSync,
           AssetGroupGet, AssetGet, InventoryGet, InventoryWear, InventoryRemove,
@@ -32,7 +33,7 @@
 
   var MOD_NAME = "Echo Eye Presets";
   var MOD_SHORT = "EEP";
-  var MOD_VERSION = "0.3.6";
+  var MOD_VERSION = "0.3.9";
   var EXT_KEY = "EchoEyePresets";
   var CMD_TAG = "eyes";
 
@@ -132,6 +133,16 @@
       tipSave: "Сохранить текущие глаза в #{0}",
       tipLoad: "Загрузить пресет #{0}",
       tipClear: "Очистить пресет #{0}",
+      tipMoveUp: "Сдвинуть пресет #{0} вверх",
+      tipMoveDown: "Сдвинуть пресет #{0} вниз",
+      tipSwap: "Поменять местами пресет #{0} с другим",
+      swap: "↔",
+      swapPrompt: "Поменять пресет #{0} с каким номером? (1–{1})",
+      swapInvalid: "Неверный номер пресета.",
+      swapped: "Пресеты #{0} и #{1} поменялись местами.",
+      moved: "Пресет сдвинут: #{0} ↔ #{1}",
+      helpSwap: "/{0} swap A B — поменять пресеты A и B",
+      helpMove: "/{0} moveup N | movedown N — сдвинуть пресет",
       page: "Страница {0} / {1}",
       rename: "Имя",
       save: "Сохранить",
@@ -219,6 +230,16 @@
       tipSave: "Save current eyes to #{0}",
       tipLoad: "Load preset #{0}",
       tipClear: "Clear preset #{0}",
+      tipMoveUp: "Move preset #{0} up",
+      tipMoveDown: "Move preset #{0} down",
+      tipSwap: "Swap preset #{0} with another",
+      swap: "↔",
+      swapPrompt: "Swap preset #{0} with which number? (1–{1})",
+      swapInvalid: "Invalid preset number.",
+      swapped: "Presets #{0} and #{1} swapped.",
+      moved: "Preset moved: #{0} ↔ #{1}",
+      helpSwap: "/{0} swap A B — swap presets A and B",
+      helpMove: "/{0} moveup N | movedown N — shift preset",
       page: "Page {0} / {1}",
       rename: "Name",
       save: "Save",
@@ -863,6 +884,57 @@
     notify(t("removed", n, pack.presetCount));
   }
 
+  function swapPresets(a, b, quiet) {
+    var pack = getActivePack();
+    var count = getPresetCount();
+    a = parseInt(a, 10);
+    b = parseInt(b, 10);
+    if (isNaN(a) || a < 1 || a > count) {
+      notify(t("noPreset", a));
+      return false;
+    }
+    if (isNaN(b) || b < 1 || b > count) {
+      notify(t("noPreset", b));
+      return false;
+    }
+    if (a === b) return true;
+    if (!pack.presets[a]) pack.presets[a] = emptyPreset();
+    if (!pack.presets[b]) pack.presets[b] = emptyPreset();
+    var tmp = cloneJson(pack.presets[a]);
+    pack.presets[a] = cloneJson(pack.presets[b]) || emptyPreset();
+    pack.presets[b] = tmp || emptyPreset();
+    saveSettings();
+    if (!quiet) notify(t("swapped", a, b));
+    else prefStatus = t("moved", a, b);
+    return true;
+  }
+
+  function movePresetUp(n) {
+    if (n <= 1) return false;
+    var ok = swapPresets(n, n - 1, true);
+    if (ok) notify(t("moved", n, n - 1));
+    return ok;
+  }
+
+  function movePresetDown(n) {
+    if (n >= getPresetCount()) return false;
+    var ok = swapPresets(n, n + 1, true);
+    if (ok) notify(t("moved", n, n + 1));
+    return ok;
+  }
+
+  function promptSwapPreset(n) {
+    var count = getPresetCount();
+    var next = window.prompt(t("swapPrompt", n, count), "");
+    if (next == null) return;
+    var b = parseInt(next, 10);
+    if (isNaN(b) || b < 1 || b > count) {
+      notify(t("swapInvalid"));
+      return;
+    }
+    swapPresets(n, b, false);
+  }
+
   function promptBlinkDelay() {
     var s = ensureSettings();
     var next = window.prompt(t("blinkDelayPrompt"), String(s.blinkDelayMs));
@@ -877,7 +949,7 @@
 
   function getSubcommands() {
     var n = getPresetCount();
-    var list = ["help", "status", "buttons", "add", "remove"];
+    var list = ["help", "status", "buttons", "add", "remove", "swap", "moveup", "movedown"];
     var i;
     for (i = 1; i <= n; i++) {
       list.push("eye" + i);
@@ -921,6 +993,8 @@
         t("helpLoad", CMD_TAG),
         t("helpClear", CMD_TAG),
         t("helpAdd", CMD_TAG),
+        t("helpSwap", CMD_TAG),
+        t("helpMove", CMD_TAG),
         t("helpMisc", CMD_TAG),
       ].join("<br>")
     );
@@ -945,6 +1019,27 @@
     }
     if (cmd === "add") return addPresetSlot();
     if (cmd === "remove") return removePresetSlot();
+    if (cmd === "swap") {
+      if (parts.length < 3) {
+        localMsg(t("helpSwap", CMD_TAG));
+        return;
+      }
+      return swapPresets(parts[1], parts[2], false);
+    }
+    if (cmd === "moveup") {
+      if (parts.length < 2) {
+        localMsg(t("helpMove", CMD_TAG));
+        return;
+      }
+      return movePresetUp(parseInt(parts[1], 10));
+    }
+    if (cmd === "movedown") {
+      if (parts.length < 2) {
+        localMsg(t("helpMove", CMD_TAG));
+        return;
+      }
+      return movePresetDown(parseInt(parts[1], 10));
+    }
 
     var saveMatch = /^eye(\d+)$/.exec(cmd);
     if (saveMatch) return savePreset(Number(saveMatch[1]));
@@ -1418,10 +1513,13 @@
       );
       if (MainCanvas) MainCanvas.textAlign = "center";
 
-      DrawButton(500, y + 45, 100, 40, t("rename"), "White", "", t("tipRename", n));
-      DrawButton(610, y + 45, 120, 40, t("save"), "#7EB6FF", "", t("tipSave", n));
-      DrawButton(740, y + 45, 120, 40, t("load"), "#5FBD7A", "", t("tipLoad", n));
-      DrawButton(870, y + 45, 120, 40, t("clear"), "#E07A7A", "", t("tipClear", n));
+      DrawButton(500, y + 45, 90, 40, t("rename"), "White", "", t("tipRename", n));
+      DrawButton(600, y + 45, 110, 40, t("save"), "#7EB6FF", "", t("tipSave", n));
+      DrawButton(720, y + 45, 110, 40, t("load"), "#5FBD7A", "", t("tipLoad", n));
+      DrawButton(840, y + 45, 110, 40, t("clear"), "#E07A7A", "", t("tipClear", n));
+      DrawButton(960, y + 45, 45, 40, "\u2191", "White", "", t("tipMoveUp", n));
+      DrawButton(1015, y + 45, 45, 40, "\u2193", "White", "", t("tipMoveDown", n));
+      DrawButton(1070, y + 45, 70, 40, t("swap"), "White", "", t("tipSwap", n));
       row++;
     }
 
@@ -1519,20 +1617,32 @@
     var n;
     for (n = start; n <= end; n++) {
       var y = 310 + row * 95;
-      if (hit(500, y + 45, 100, 40)) {
+      if (hit(500, y + 45, 90, 40)) {
         renamePreset(n);
         return;
       }
-      if (hit(610, y + 45, 120, 40)) {
+      if (hit(600, y + 45, 110, 40)) {
         savePreset(n);
         return;
       }
-      if (hit(740, y + 45, 120, 40)) {
+      if (hit(720, y + 45, 110, 40)) {
         loadPreset(n, false);
         return;
       }
-      if (hit(870, y + 45, 120, 40)) {
+      if (hit(840, y + 45, 110, 40)) {
         clearPreset(n);
+        return;
+      }
+      if (hit(960, y + 45, 45, 40)) {
+        movePresetUp(n);
+        return;
+      }
+      if (hit(1015, y + 45, 45, 40)) {
+        movePresetDown(n);
+        return;
+      }
+      if (hit(1070, y + 45, 70, 40)) {
+        promptSwapPreset(n);
         return;
       }
       row++;
