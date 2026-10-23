@@ -33,7 +33,7 @@ https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-prese
 3. Tampermonkey will open the install page — click **Install**.
 4. Refresh Bondage Club (or log in again).
 5. You should see a local chat message like:  
-   `v0.3.6 ready. Menu: Extensions → Echo Eye Presets · /eyes help`
+   `v0.3.9 ready. Menu: Extensions → Echo Eye Presets · /eyes help`
 
 ### Option B — Install from a local file
 
@@ -84,10 +84,11 @@ A **pack** is a named set of eye looks (presets). Typical use:
 
 In a chat room, if chat buttons are enabled:
 
-- A small **E** button appears (position can follow BCAR-style corners or a custom saved position).
-- **Click** — open/close the list of presets from the active pack.
-- **Drag** — move the button; position is saved.
+- A small **E▼ / E▲** button appears (default under the BCAR-style button stack, or a custom saved position).
+- **Click** — open/close the list of presets from the **active pack** (named rows).
+- **Drag** — move the button; position is saved across sessions.
 - Click a preset row — **load** that look (with blink, if enabled).
+- **Adaptive open direction** — if the button is on the right side of the free area (toward chat) or would overflow the screen, the list opens **to the left**; near the bottom edge it also opens **upward**.
 
 Empty presets are shown in white; saved ones are highlighted in green.
 
@@ -128,19 +129,35 @@ The choice is stored in extension settings.
 | **Blink: ON/OFF** | Toggle blink on dropdown load |
 | **`Nms`** | Prompt to set blink delay in milliseconds |
 
-### Preset row
+### Buttons / slots row
 
 | Control | Action |
 |---|---|
 | **Buttons: ON/OFF** | Show/hide the chat E dropdown |
 | **+ Preset** / **− Preset** | Add/remove a look slot in the active pack |
 | **Reset pos.** | Clear custom dropdown button position |
+
+(Language toggle **Lang: RU / EN** is at the top of the same Extensions screen.)
+
+### Per-preset row
+
+| Control | Action |
+|---|---|
 | **Name** | Rename a look |
-| **Save** | Snapshot current left/right ECHO eyes into this slot |
+| **Save** | Snapshot current left/right ECHO eyes into this slot (asset, colors, **Layering** / `Property`) |
 | **Load** | Apply this slot (no blink) |
 | **Clear** | Clear saved eye data (keeps the name) |
+| **↑** / **↓** | Move this preset one slot up or down (swap with neighbor) |
+| **↔** | Swap this preset with any other slot number (prompt) |
 
 Pagination appears when you have more than 4 presets on the page.
+
+### Reordering presets
+
+Presets keep their **data and names** when moved; only slot indexes change. Useful if you want e.g. slot **12** to become slot **1**.
+
+- In settings: use **↑** / **↓** or **↔** on the preset row.
+- In chat: `/eyes swap 12 1`, `/eyes moveup 3`, `/eyes movedown 3`.
 
 ---
 
@@ -171,12 +188,17 @@ Type in chat (autocomplete is supported):
 | `/eyes eyeN` | Save current eyes to preset **N** |
 | `/eyes eyeloadN` | Load preset **N** (no blink) |
 | `/eyes eyeclearN` | Clear preset **N** (keep name) |
+| `/eyes swap A B` | Swap presets **A** and **B** in the active pack |
+| `/eyes moveup N` | Swap preset **N** with **N−1** |
+| `/eyes movedown N` | Swap preset **N** with **N+1** |
 
 Examples:
 
 ```text
 /eyes eye1
 /eyes eyeload2
+/eyes swap 12 1
+/eyes moveup 3
 /eyes status
 ```
 
@@ -198,7 +220,9 @@ The Tampermonkey script matches:
 ## Data & privacy
 
 - Settings are stored in Bondage Club **`Player.ExtensionSettings.EchoEyePresets`** and synced with the usual club extension settings sync when available.
-- Presets store eye asset name, color, description, and property JSON for left/right ECHO slots.
+- Presets store, for left/right ECHO slots: asset name, layer colors, description, and full **`Property`** (including **LayeringAsset** move/resize/rotate/priority).
+- Packs, language, blink options, and dropdown button position are stored in the same settings object.
+- Older single-list saves are **auto-migrated** into pack #1 on first load after the packs update.
 - Nothing is uploaded to a third-party server by this mod beyond normal BC extension sync.
 
 ---
@@ -213,7 +237,10 @@ The Tampermonkey script matches:
 | Dropdown missing in chat | Open settings → enable **Buttons**; check you are in a chat room. |
 | Blink feels wrong / expression stuck | Adjust blink delay; ensure Blink is ON only for dropdown use; load from settings to apply without blink. |
 | Pack list empty after update | Should auto-migrate; if not, re-save presets. Check `/eyes status`. |
+| Want slot 12 first in the list | Use **↔** / `/eyes swap 12 1`, or **↑** repeatedly. |
+| Dropdown opens over chat | Drag the **E** button left; adaptive open should flip left when past mid-screen. |
 | bcModSdk failed | Allow CDN access (`cdn.jsdelivr.net` / `unpkg.com`), or check network/adblock. |
+| Script shows wrong version | Ensure `// @version` and internal `MOD_VERSION` match (both should be `0.3.9` for this release). |
 
 Open the browser console (F12) and look for `[EEP]` log lines for more detail.
 
