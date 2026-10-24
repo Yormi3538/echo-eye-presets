@@ -2,7 +2,7 @@
 
 A Bondage Club userscript that saves and loads **ECHO Clothing Ext** eye looks (left / right Luzi eye slots) as named presets, grouped into **packs** (for example “red eyes”, “blue eyes”). Switch looks from a draggable chat dropdown or from the Extensions settings screen, with an optional **blink** animation when changing presets in chat.
 
-**Current version:** `0.3.9`  
+**Current version:** `0.3.10`  
 **Chat command:** `/eyes`  
 **Settings path:** Preferences → Extensions → **Echo Eye Presets**
 
@@ -33,7 +33,7 @@ https://raw.githubusercontent.com/yormi3538/echo-eye-presets/main/echo-eye-prese
 3. Tampermonkey will open the install page — click **Install**.
 4. Refresh Bondage Club (or log in again).
 5. You should see a local chat message like:  
-   `v0.3.9 ready. Menu: Extensions → Echo Eye Presets · /eyes help`
+   `v0.3.10 ready. Menu: Extensions → Echo Eye Presets · /eyes help`
 
 ### Option B — Install from a local file
 
@@ -88,6 +88,7 @@ In a chat room, if chat buttons are enabled:
 - **Click** — open/close the list of presets from the **active pack** (named rows).
 - **Drag** — move the button; position is saved across sessions.
 - Click a preset row — **load** that look (with blink, if enabled).
+- **Hide on click** (settings, default **ON**) — close the list after picking a preset or when clicking outside it. When **OFF**, the list stays open until you click **E▼ / E▲** again.
 - **Adaptive open direction** — if the button is on the right side of the free area (toward chat) or would overflow the screen, the list opens **to the left**; near the bottom edge it also opens **upward**.
 
 Empty presets are shown in white; saved ones are highlighted in green.
@@ -136,6 +137,7 @@ The choice is stored in extension settings.
 | **Buttons: ON/OFF** | Show/hide the chat E dropdown |
 | **+ Preset** / **− Preset** | Add/remove a look slot in the active pack |
 | **Reset pos.** | Clear custom dropdown button position |
+| **Hide: ON/OFF** | Close chat list on outside click / after picking a preset |
 
 (Language toggle **Lang: RU / EN** is at the top of the same Extensions screen.)
 
@@ -146,7 +148,8 @@ The choice is stored in extension settings.
 | **Name** | Rename a look |
 | **Save** | Snapshot current left/right ECHO eyes into this slot (asset, colors, **Layering** / `Property`) |
 | **Load** | Apply this slot (no blink) |
-| **Clear** | Clear saved eye data (keeps the name) |
+| **Clear** | Clear saved eye data (keeps the name and slot) |
+| **Del** | Delete this slot and shift following presets down |
 | **↑** / **↓** | Move this preset one slot up or down (swap with neighbor) |
 | **↔** | Swap this preset with any other slot number (prompt) |
 
@@ -188,6 +191,7 @@ Type in chat (autocomplete is supported):
 | `/eyes eyeN` | Save current eyes to preset **N** |
 | `/eyes eyeloadN` | Load preset **N** (no blink) |
 | `/eyes eyeclearN` | Clear preset **N** (keep name) |
+| `/eyes delete N` | Delete preset slot **N** (renumber following slots) |
 | `/eyes swap A B` | Swap presets **A** and **B** in the active pack |
 | `/eyes moveup N` | Swap preset **N** with **N−1** |
 | `/eyes movedown N` | Swap preset **N** with **N+1** |
@@ -240,9 +244,19 @@ The Tampermonkey script matches:
 | Want slot 12 first in the list | Use **↔** / `/eyes swap 12 1`, or **↑** repeatedly. |
 | Dropdown opens over chat | Drag the **E** button left; adaptive open should flip left when past mid-screen. |
 | bcModSdk failed | Allow CDN access (`cdn.jsdelivr.net` / `unpkg.com`), or check network/adblock. |
-| Script shows wrong version | Ensure `// @version` and internal `MOD_VERSION` match (both should be `0.3.9` for this release). |
+| Script shows wrong version | Ensure `// @version` and internal `MOD_VERSION` match (both should be `0.3.10` / `0.3.10-electron` for this release). |
 
 Open the browser console (F12) and look for `[EEP]` log lines for more detail.
+
+---
+
+## Changelog (recent)
+
+| Version | Highlights |
+|---|---|
+| **0.3.10** | Settings **Hide: ON/OFF** for chat dropdown auto-close; per-preset **Del** (+ `/eyes delete N`). |
+| **0.3.9** | Preset **reorder**: ↑ / ↓ / ↔ in Extensions; `/eyes swap`, `moveup`, `movedown`. Keep `@version` ≡ `MOD_VERSION`. |
+| **0.3.x** | Eye **packs**, RU/EN UI, chat dropdown with **drag** + adaptive open, **blink** on dropdown load, Layering in saves, GitHub `@updateURL`. |
 
 ---
 
