@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Echo Eye Presets
 // @namespace    https://www.bondageprojects.com/
-// @version      0.3.9-electron
+// @version      0.3.10-electron
 // @description  Echo eye packs for Electron Bondage Club (no Tampermonkey @require)
 // @author       local
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -30,7 +30,7 @@
 
   var MOD_NAME = "Echo Eye Presets";
   var MOD_SHORT = "EEP";
-  var MOD_VERSION = "0.3.9-electron";
+  var MOD_VERSION = "0.3.10-electron";
   var EXT_KEY = "EchoEyePresets";
   var CMD_TAG = "eyes";
 
@@ -129,22 +129,30 @@
       tipRename: "Переименовать пресет #{0}",
       tipSave: "Сохранить текущие глаза в #{0}",
       tipLoad: "Загрузить пресет #{0}",
-      tipClear: "Очистить пресет #{0}",
+      tipClear: "Очистить данные пресета #{0} (слот остаётся)",
+      tipDelete: "Удалить слот пресета #{0}",
       tipMoveUp: "Сдвинуть пресет #{0} вверх",
       tipMoveDown: "Сдвинуть пресет #{0} вниз",
       tipSwap: "Поменять местами пресет #{0} с другим",
+      tipHideOnClick: "Закрывать список при клике вне него или после выбора пресета",
       swap: "↔",
       swapPrompt: "Поменять пресет #{0} с каким номером? (1–{1})",
       swapInvalid: "Неверный номер пресета.",
       swapped: "Пресеты #{0} и #{1} поменялись местами.",
       moved: "Пресет сдвинут: #{0} ↔ #{1}",
+      deletedAt: "Удалён слот #{0}. Осталось пресетов: {1}",
+      hideOnClickOn: "Скрытие: ВКЛ",
+      hideOnClickOff: "Скрытие: ВЫКЛ",
+      hideOnClickStatus: "Скрытие списка по клику: {0}",
       helpSwap: "/{0} swap A B — поменять пресеты A и B",
       helpMove: "/{0} moveup N | movedown N — сдвинуть пресет",
+      helpDelete: "/{0} delete N — удалить слот пресета N",
       page: "Страница {0} / {1}",
       rename: "Имя",
       save: "Сохранить",
       load: "Загрузить",
-      clear: "Очистить",
+      clear: "Очист.",
+      delete: "Удал.",
       langBtn: "Язык: RU",
       langTip: "Переключить язык / Switch language",
       langSet: "Язык: русский",
@@ -226,22 +234,30 @@
       tipRename: "Rename preset #{0}",
       tipSave: "Save current eyes to #{0}",
       tipLoad: "Load preset #{0}",
-      tipClear: "Clear preset #{0}",
+      tipClear: "Clear preset #{0} data (keep slot)",
+      tipDelete: "Delete preset slot #{0}",
       tipMoveUp: "Move preset #{0} up",
       tipMoveDown: "Move preset #{0} down",
       tipSwap: "Swap preset #{0} with another",
+      tipHideOnClick: "Close the list on outside click or after picking a preset",
       swap: "↔",
       swapPrompt: "Swap preset #{0} with which number? (1–{1})",
       swapInvalid: "Invalid preset number.",
       swapped: "Presets #{0} and #{1} swapped.",
       moved: "Preset moved: #{0} ↔ #{1}",
+      deletedAt: "Deleted slot #{0}. Presets left: {1}",
+      hideOnClickOn: "Hide: ON",
+      hideOnClickOff: "Hide: OFF",
+      hideOnClickStatus: "Hide list on click: {0}",
       helpSwap: "/{0} swap A B — swap presets A and B",
       helpMove: "/{0} moveup N | movedown N — shift preset",
+      helpDelete: "/{0} delete N — delete preset slot N",
       page: "Page {0} / {1}",
       rename: "Name",
       save: "Save",
       load: "Load",
       clear: "Clear",
+      delete: "Del",
       langBtn: "Lang: EN",
       langTip: "Switch language / Переключить язык",
       langSet: "Language: English",
@@ -423,6 +439,7 @@
       packCount: 1,
       blinkEnable: true,
       blinkDelayMs: DEFAULT_BLINK_MS,
+      dropdownHideOnClick: true,
       packs: { 1: makePack("") },
     };
   }
@@ -486,6 +503,7 @@
     if (s.buttonX != null && typeof s.buttonX !== "number") s.buttonX = null;
     if (s.buttonY != null && typeof s.buttonY !== "number") s.buttonY = null;
     if (typeof s.blinkEnable !== "boolean") s.blinkEnable = true;
+    if (typeof s.dropdownHideOnClick !== "boolean") s.dropdownHideOnClick = true;
     var delay = parseInt(s.blinkDelayMs, 10);
     if (isNaN(delay) || delay < 0) delay = DEFAULT_BLINK_MS;
     if (delay > 2000) delay = 2000;
@@ -915,6 +933,32 @@
     notify(t("removed", n, pack.presetCount));
   }
 
+  /** Delete preset slot N and shift following slots down. */
+  function deletePresetAt(n) {
+    var pack = getActivePack();
+    var count = getPresetCount();
+    n = parseInt(n, 10);
+    if (isNaN(n) || n < 1 || n > count) {
+      notify(t("noPreset", n));
+      return false;
+    }
+    if (count <= MIN_PRESETS) {
+      notify(t("minPresets", MIN_PRESETS));
+      return false;
+    }
+    var i;
+    for (i = n; i < count; i++) {
+      pack.presets[i] = cloneJson(pack.presets[i + 1]) || emptyPreset();
+    }
+    delete pack.presets[count];
+    pack.presetCount = count - 1;
+    saveSettings();
+    var maxPage = Math.max(0, Math.ceil(pack.presetCount / PRESETS_PER_PAGE) - 1);
+    if (prefPage > maxPage) prefPage = maxPage;
+    notify(t("deletedAt", n, pack.presetCount));
+    return true;
+  }
+
   function swapPresets(a, b, quiet) {
     var pack = getActivePack();
     var count = getPresetCount();
@@ -980,7 +1024,7 @@
 
   function getSubcommands() {
     var n = getPresetCount();
-    var list = ["help", "status", "buttons", "add", "remove", "swap", "moveup", "movedown"];
+    var list = ["help", "status", "buttons", "add", "remove", "swap", "moveup", "movedown", "delete"];
     var i;
     for (i = 1; i <= n; i++) {
       list.push("eye" + i);
@@ -999,6 +1043,10 @@
       t("statusPack", getActivePackName(), s.activePackId, s.packCount),
       t("statusCount", n),
       t("statusBlink", s.blinkEnable ? "ON" : "OFF", s.blinkDelayMs),
+      t(
+        "hideOnClickStatus",
+        s.dropdownHideOnClick !== false ? t("on") : t("off")
+      ),
     ];
     var i;
     for (i = 1; i <= n; i++) {
@@ -1026,6 +1074,7 @@
         t("helpAdd", CMD_TAG),
         t("helpSwap", CMD_TAG),
         t("helpMove", CMD_TAG),
+        t("helpDelete", CMD_TAG),
         t("helpMisc", CMD_TAG),
       ].join("<br>")
     );
@@ -1070,6 +1119,13 @@
         return;
       }
       return movePresetDown(parseInt(parts[1], 10));
+    }
+    if (cmd === "delete") {
+      if (parts.length < 2) {
+        localMsg(t("helpDelete", CMD_TAG));
+        return;
+      }
+      return deletePresetAt(parts[1]);
     }
 
     var saveMatch = /^eye(\d+)$/.exec(cmd);
@@ -1361,6 +1417,8 @@
       drag.moved = false;
       return true;
     }
+    var s = ensureSettings();
+    var hideOnClick = s.dropdownHideOnClick !== false;
     var a = getDropdownAnchor();
     if (hit(a.x, a.y, a.w, a.h)) {
       dropdownOpen = !dropdownOpen;
@@ -1373,11 +1431,15 @@
       var btn = items[i];
       if (hit(btn.x, btn.y, btn.w, btn.h)) {
         loadPreset(btn.n, true);
-        dropdownOpen = false;
+        if (hideOnClick) dropdownOpen = false;
         return true;
       }
     }
-    dropdownOpen = false;
+    if (hideOnClick) {
+      dropdownOpen = false;
+      return false;
+    }
+    // Keep list open; let the click pass through to the game
     return false;
   }
 
@@ -1511,6 +1573,16 @@
     DrawButton(740, 220, 130, 45, t("addPreset"), "White", "", t("tipAdd"));
     DrawButton(880, 220, 130, 45, t("removePreset"), "White", "", t("tipRemove"));
     DrawButton(1020, 220, 140, 45, t("resetPos"), "White", "", t("tipResetPos"));
+    DrawButton(
+      1170,
+      220,
+      200,
+      45,
+      s.dropdownHideOnClick !== false ? t("hideOnClickOn") : t("hideOnClickOff"),
+      s.dropdownHideOnClick !== false ? "#5FBD7A" : "#AAAAAA",
+      "",
+      t("tipHideOnClick")
+    );
 
     // Pagination
     var pages = Math.max(1, Math.ceil(count / PRESETS_PER_PAGE));
@@ -1544,13 +1616,14 @@
       );
       if (MainCanvas) MainCanvas.textAlign = "center";
 
-      DrawButton(500, y + 45, 90, 40, t("rename"), "White", "", t("tipRename", n));
-      DrawButton(600, y + 45, 110, 40, t("save"), "#7EB6FF", "", t("tipSave", n));
-      DrawButton(720, y + 45, 110, 40, t("load"), "#5FBD7A", "", t("tipLoad", n));
-      DrawButton(840, y + 45, 110, 40, t("clear"), "#E07A7A", "", t("tipClear", n));
-      DrawButton(960, y + 45, 45, 40, "\u2191", "White", "", t("tipMoveUp", n));
-      DrawButton(1015, y + 45, 45, 40, "\u2193", "White", "", t("tipMoveDown", n));
-      DrawButton(1070, y + 45, 70, 40, t("swap"), "White", "", t("tipSwap", n));
+      DrawButton(500, y + 45, 80, 40, t("rename"), "White", "", t("tipRename", n));
+      DrawButton(590, y + 45, 95, 40, t("save"), "#7EB6FF", "", t("tipSave", n));
+      DrawButton(695, y + 45, 95, 40, t("load"), "#5FBD7A", "", t("tipLoad", n));
+      DrawButton(800, y + 45, 85, 40, t("clear"), "#E07A7A", "", t("tipClear", n));
+      DrawButton(895, y + 45, 85, 40, t("delete"), "#C44", "", t("tipDelete", n));
+      DrawButton(990, y + 45, 40, 40, "\u2191", "White", "", t("tipMoveUp", n));
+      DrawButton(1040, y + 45, 40, 40, "\u2193", "White", "", t("tipMoveDown", n));
+      DrawButton(1090, y + 45, 65, 40, t("swap"), "White", "", t("tipSwap", n));
       row++;
     }
 
@@ -1630,6 +1703,16 @@
       return;
     }
 
+    if (hit(1170, 220, 200, 45)) {
+      s.dropdownHideOnClick = !(s.dropdownHideOnClick !== false);
+      saveSettings();
+      prefStatus = t(
+        "hideOnClickStatus",
+        s.dropdownHideOnClick !== false ? t("on") : t("off")
+      );
+      return;
+    }
+
     var pages = Math.max(1, Math.ceil(count / PRESETS_PER_PAGE));
     if (pages > 1) {
       if (hit(700, 265, 90, 40)) {
@@ -1648,31 +1731,35 @@
     var n;
     for (n = start; n <= end; n++) {
       var y = 310 + row * 95;
-      if (hit(500, y + 45, 90, 40)) {
+      if (hit(500, y + 45, 80, 40)) {
         renamePreset(n);
         return;
       }
-      if (hit(600, y + 45, 110, 40)) {
+      if (hit(590, y + 45, 95, 40)) {
         savePreset(n);
         return;
       }
-      if (hit(720, y + 45, 110, 40)) {
+      if (hit(695, y + 45, 95, 40)) {
         loadPreset(n, false);
         return;
       }
-      if (hit(840, y + 45, 110, 40)) {
+      if (hit(800, y + 45, 85, 40)) {
         clearPreset(n);
         return;
       }
-      if (hit(960, y + 45, 45, 40)) {
+      if (hit(895, y + 45, 85, 40)) {
+        deletePresetAt(n);
+        return;
+      }
+      if (hit(990, y + 45, 40, 40)) {
         movePresetUp(n);
         return;
       }
-      if (hit(1015, y + 45, 45, 40)) {
+      if (hit(1040, y + 45, 40, 40)) {
         movePresetDown(n);
         return;
       }
-      if (hit(1070, y + 45, 70, 40)) {
+      if (hit(1090, y + 45, 65, 40)) {
         promptSwapPreset(n);
         return;
       }
@@ -1721,7 +1808,18 @@
 
     ensureSettings();
 
-    var sdk = getSdk();
+    var sdk = null;
+    try {
+      sdk = await loadSdk();
+    } catch (eSdk) {
+      console.error("[" + MOD_SHORT + "] bcModSdk missing", eSdk);
+      try {
+        localMsg("bcModSdk failed.");
+      } catch (e2) {
+        /* ignore */
+      }
+      return;
+    }
     if (!sdk || typeof sdk.registerMod !== "function") {
       console.error("[" + MOD_SHORT + "] bcModSdk missing");
       try {
